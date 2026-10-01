@@ -5,12 +5,15 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="theme-color" content="#111318">
   <title>Compt'Touns</title>
-  <link rel="stylesheet" href="style.css?v=6">
+  <link rel="stylesheet" href="style.css?v=7">
 </head>
 <body>
   <main>
     <header>
-      <h1>Compt'Touns</h1>
+      <div class="title-row">
+        <h1>Compt'Touns</h1>
+        <p class="also-check">Also check <a href="https://tonoplas909.github.io/drift-club/" target="_blank" rel="noopener">Drift Club</a> →</p>
+      </div>
       <p id="today-label" class="muted"></p>
       <p id="status" class="status" data-state="loading">Connexion…</p>
     </header>
@@ -79,12 +82,7 @@
         <tbody id="history-body"></tbody>
       </table>
       <p id="history-empty" class="muted empty">Rien pour l'instant. Attendez le premier « notamment ».</p>
-    </section>
-
-    <footer class="site-footer">
-      Also check <a href="https://tonoplas909.github.io/drift-club/" target="_blank" rel="noopener">Drift Club</a> →
-    </footer>
-  </main>
+    </section>  </main>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="config.js?v=5"></script>

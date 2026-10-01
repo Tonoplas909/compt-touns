@@ -263,6 +263,18 @@ section + section { margin-top: 28px; }
 .defi-list.done .quand strong { color: var(--text); font-weight: 600; }
 .defis .empty { padding: 4px 0; text-align: left; font-size: 0.9rem; }
 
+/* Pied de page */
+.site-footer {
+  margin-top: 40px;
+  padding-top: 16px;
+  border-top: 1px solid var(--border);
+  text-align: center;
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+.site-footer a { color: var(--text); font-weight: 700; text-underline-offset: 3px; }
+.site-footer a:hover { color: var(--notamment); }
+
 /* Statut de connexion */
 .status { margin: 6px 0 0; font-size: 0.8rem; color: var(--muted); }
 .status::before {

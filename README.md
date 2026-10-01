@@ -1,6 +1,7 @@
 # Compt'Touns
 
 Compte les « notamment », les « on va dire » et les « SIRIS » de M. Tounsi, avec un historique par jour.
+On peut aussi lancer des défis : proposer des mots à lui faire dire, puis les valider quand il les dit.
 
 Site statique (HTML/CSS/JS, sans build) hébergé sur GitHub Pages. Les données sont dans
 Supabase : tous les appareils partagent les mêmes compteurs, mis à jour en temps réel.

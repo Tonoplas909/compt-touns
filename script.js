@@ -215,6 +215,108 @@ function renderHistory(days, today) {
   document.querySelector('.history').hidden = days.length === 0;
 }
 
+// --- Défis : mots à faire dire au prof (table `defis`) ---
+
+let defis = [];
+const validatedDate = new Intl.DateTimeFormat('fr-FR', { timeZone: TIME_ZONE, day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
+
+function setDefiMessage(text, isError = false) {
+  const el = document.getElementById('defi-message');
+  el.textContent = text;
+  el.classList.toggle('error', isError);
+}
+
+let lastDefisRequest = 0;
+async function refreshDefis() {
+  const request = ++lastDefisRequest;
+  const { data: rows, error } = await db.from('defis').select('id, mot, created_at, validated_at').order('created_at');
+  if (request !== lastDefisRequest) return;
+  if (error) {
+    console.error(error);
+    setDefiMessage('Impossible de charger les défis', true);
+    return;
+  }
+  defis = rows;
+  renderDefis();
+}
+
+let defisTimer = null;
+function scheduleDefisRefresh() {
+  clearTimeout(defisTimer);
+  defisTimer = setTimeout(refreshDefis, 300);
+}
+
+async function addDefi(event) {
+  event.preventDefault();
+  const input = document.getElementById('defi-input');
+  const button = event.target.querySelector('button');
+  const mot = input.value.replace(/\s+/g, ' ').trim();
+  if (!mot) return;
+
+  button.disabled = true;
+  const { error } = await db.from('defis').insert({ mot });
+  button.disabled = false;
+
+  if (error) {
+    console.error(error);
+    setDefiMessage(error.code === '23505' ? `« ${mot} » est déjà dans la file d'attente.` : "Le mot n'a pas pu être ajouté.", true);
+    return;
+  }
+  input.value = '';
+  setDefiMessage(`« ${mot} » ajouté à la file d'attente.`);
+  refreshDefis();
+}
+
+async function validerDefi(defi, button) {
+  if (!confirm(`Il a dit « ${defi.mot} » ?`)) return;
+  button.disabled = true;
+  const { error } = await db.rpc('valider_defi', { defi_id: defi.id });
+  if (error) {
+    console.error(error);
+    button.disabled = false;
+    setDefiMessage("La validation n'a pas pu être enregistrée.", true);
+    return;
+  }
+  setDefiMessage(`« ${defi.mot} » validé !`);
+  refreshDefis();
+}
+
+function renderDefis() {
+  const pending = defis.filter((d) => !d.validated_at);
+  const done = defis.filter((d) => d.validated_at).sort((a, b) => b.validated_at.localeCompare(a.validated_at));
+
+  document.getElementById('defis-pending').replaceChildren(...pending.map((defi) => {
+    const li = document.createElement('li');
+    const mot = document.createElement('span');
+    mot.className = 'mot';
+    mot.textContent = defi.mot;
+    const button = document.createElement('button');
+    button.type = 'button';
+    button.className = 'valider';
+    button.textContent = "Il l'a dit ✓";
+    button.addEventListener('click', () => validerDefi(defi, button));
+    li.append(mot, button);
+    return li;
+  }));
+
+  document.getElementById('defis-done').replaceChildren(...done.map((defi) => {
+    const li = document.createElement('li');
+    const mot = document.createElement('span');
+    mot.className = 'mot';
+    mot.textContent = defi.mot;
+    const quand = document.createElement('span');
+    quand.className = 'quand';
+    quand.textContent = validatedDate.format(new Date(defi.validated_at));
+    li.append(mot, quand);
+    return li;
+  }));
+
+  document.getElementById('defis-pending-count').textContent = pending.length;
+  document.getElementById('defis-done-count').textContent = done.length;
+  document.getElementById('defis-pending-empty').hidden = pending.length > 0;
+  document.getElementById('defis-done-empty').hidden = done.length > 0;
+}
+
 // --- Démarrage ---
 
 for (const card of document.querySelectorAll('.counter')) {
@@ -222,17 +324,21 @@ for (const card of document.querySelectorAll('.counter')) {
   card.querySelector('.plus').addEventListener('click', () => change(expr, 1));
   card.querySelector('.minus').addEventListener('click', () => change(expr, -1));
 }
+document.getElementById('defi-form').addEventListener('submit', addDefi);
 
-// Temps réel : un clic sur un autre appareil déclenche un rechargement des totaux.
-db.channel('compteur_events')
+// Temps réel : un changement sur un autre appareil déclenche un rechargement.
+db.channel('compt-touns')
   .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'compteur_events' }, scheduleRefresh)
+  .on('postgres_changes', { event: '*', schema: 'public', table: 'defis' }, scheduleDefisRefresh)
   .subscribe((state) => {
     if (state === 'CHANNEL_ERROR' || state === 'TIMED_OUT') setStatus('warn', 'Temps réel indisponible (rechargez la page)');
   });
 
 // Retour sur l'onglet ou changement de jour : on resynchronise.
-document.addEventListener('visibilitychange', () => { if (!document.hidden) refresh(); });
+document.addEventListener('visibilitychange', () => { if (!document.hidden) { refresh(); refreshDefis(); } });
 setInterval(render, 60_000);
 
 render();
+renderDefis();
 refresh();
+refreshDefis();

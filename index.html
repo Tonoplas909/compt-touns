@@ -42,6 +42,24 @@
       <div><span class="stat-value" id="stat-record">0</span><span class="muted" id="stat-record-label">record</span></div>
     </section>
 
+    <section class="defis" aria-labelledby="defis-title">
+      <h2 id="defis-title" class="section-title">Défis</h2>
+      <p class="muted small">Ajoutez un mot à lui faire dire. Quand il le dit, validez-le.</p>
+      <form id="defi-form" class="defi-form" autocomplete="off">
+        <input id="defi-input" type="text" maxlength="60" placeholder="Un mot à lui faire dire…" aria-label="Nouveau mot" required>
+        <button type="submit">Ajouter</button>
+      </form>
+      <p id="defi-message" class="defi-message" role="status"></p>
+
+      <h3 class="list-title">En attente <span id="defis-pending-count" class="badge">0</span></h3>
+      <ul id="defis-pending" class="defi-list"></ul>
+      <p id="defis-pending-empty" class="muted empty">Aucun défi en attente.</p>
+
+      <h3 class="list-title">Validés <span id="defis-done-count" class="badge">0</span></h3>
+      <ul id="defis-done" class="defi-list done"></ul>
+      <p id="defis-done-empty" class="muted empty">Aucun défi validé pour l'instant.</p>
+    </section>
+
     <section aria-labelledby="chart-title">
       <h2 id="chart-title" class="section-title">14 derniers jours</h2>
       <div class="legend">

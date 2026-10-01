@@ -3,7 +3,7 @@
 -- Chaque clic = une ligne (+1 ou -1). Pas de mise à jour ni de suppression depuis le site.
 create table public.compteur_events (
   id bigint generated always as identity primary key,
-  expression text not null check (expression in ('notamment', 'on_va_dire')),
+  expression text not null check (expression in ('notamment', 'on_va_dire', 'siris')),
   delta smallint not null default 1 check (delta in (1, -1)),
   created_at timestamptz not null default now()
 );
@@ -30,7 +30,8 @@ as
 select
   (created_at at time zone 'Europe/Paris')::date as jour,
   greatest(0, coalesce(sum(delta) filter (where expression = 'notamment'), 0))::int as notamment,
-  greatest(0, coalesce(sum(delta) filter (where expression = 'on_va_dire'), 0))::int as on_va_dire
+  greatest(0, coalesce(sum(delta) filter (where expression = 'on_va_dire'), 0))::int as on_va_dire,
+  greatest(0, coalesce(sum(delta) filter (where expression = 'siris'), 0))::int as siris
 from public.compteur_events
 group by 1;
 

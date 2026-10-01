@@ -1,6 +1,7 @@
 // Données chargées depuis la vue Supabase `compteur_jours` :
-// { "AAAA-MM-JJ": { notamment: n, on_va_dire: n } }
-const EXPRESSIONS = ['notamment', 'on_va_dire'];
+// { "AAAA-MM-JJ": { notamment: n, on_va_dire: n, siris: n } }
+const LABELS = { notamment: 'notamment', on_va_dire: 'on va dire', siris: 'SIRIS' };
+const EXPRESSIONS = Object.keys(LABELS); // = colonnes de la vue SQL
 const TIME_ZONE = 'Europe/Paris'; // doit correspondre à la vue SQL
 const CHART_DAYS = 14;
 
@@ -47,13 +48,12 @@ function setStatus(state, text) {
 }
 
 async function fetchData() {
-  const { data: rows, error } = await db.from('compteur_jours').select('jour, notamment, on_va_dire');
+  const { data: rows, error } = await db.from('compteur_jours').select(['jour', ...EXPRESSIONS].join(', '));
   if (error) throw error;
   const next = {};
   for (const row of rows) {
-    if (row.notamment + row.on_va_dire > 0) {
-      next[row.jour] = { notamment: row.notamment, on_va_dire: row.on_va_dire };
-    }
+    const entry = Object.fromEntries(EXPRESSIONS.map((expr) => [expr, row[expr] || 0]));
+    if (dayTotal(entry) > 0) next[row.jour] = entry;
   }
   return next;
 }
@@ -84,7 +84,7 @@ function scheduleRefresh() {
 
 async function change(expr, delta) {
   const today = todayKey();
-  const entry = data[today] || { notamment: 0, on_va_dire: 0 };
+  const entry = data[today] || Object.fromEntries(EXPRESSIONS.map((e) => [e, 0]));
   if (delta < 0 && !entry[expr]) return;
 
   // Affichage immédiat, confirmé (ou annulé) par la réponse du serveur.
@@ -166,7 +166,8 @@ function renderChart(today) {
     const total = dayTotal(entry);
     const bar = document.createElement('div');
     bar.className = 'bar';
-    bar.title = `${shortDate.format(parseKey(key))} : ${entry.notamment || 0} notamment, ${entry.on_va_dire || 0} on va dire`;
+    bar.title = `${shortDate.format(parseKey(key))} : ` +
+      EXPRESSIONS.map((expr) => `${entry[expr] || 0} ${LABELS[expr]}`).join(', ');
 
     const label = document.createElement('div');
     label.className = 'total';
@@ -199,8 +200,7 @@ function renderHistory(days, today) {
     if (day === today) tr.classList.add('is-today');
     const cells = [
       [day === today ? "Aujourd'hui" : shortDate.format(parseKey(day)), ''],
-      [entry.notamment, 'notamment'],
-      [entry.on_va_dire, 'on_va_dire'],
+      ...EXPRESSIONS.map((expr) => [entry[expr] || 0, expr]),
       [dayTotal(entry), ''],
     ];
     for (const [text, cls] of cells) {

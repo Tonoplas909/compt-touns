@@ -1,6 +1,6 @@
 # Compt'Touns
 
-Compte les « notamment » et les « on va dire » de M. Tounsi, avec un historique par jour.
+Compte les « notamment », les « on va dire » et les « SIRIS » de M. Tounsi, avec un historique par jour.
 
 Site statique (HTML/CSS/JS, sans build) hébergé sur GitHub Pages. Les données sont dans
 Supabase : tous les appareils partagent les mêmes compteurs, mis à jour en temps réel.
@@ -9,6 +9,7 @@ Supabase : tous les appareils partagent les mêmes compteurs, mis à jour en tem
 
 1. Créer un projet Supabase.
 2. **SQL Editor → New query** : coller le contenu de [`supabase.sql`](supabase.sql), puis **Run**.
+   (Les fichiers de [`migrations/`](migrations) servent seulement à mettre à jour une base déjà créée.)
 3. **Project Settings → API** : copier l'URL du projet et la clé *publishable* (ou *anon*)
    dans [`config.js`](config.js).
 

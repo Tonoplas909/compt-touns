@@ -28,6 +28,12 @@
         <button class="plus" type="button" disabled>+1</button>
         <button class="minus" type="button" aria-label="Retirer 1 à on va dire" disabled>−1</button>
       </article>
+      <article class="counter" data-expr="siris">
+        <h2>« SIRIS »</h2>
+        <p class="count" aria-live="polite">0</p>
+        <button class="plus" type="button" disabled>+1</button>
+        <button class="minus" type="button" aria-label="Retirer 1 à SIRIS" disabled>−1</button>
+      </article>
     </section>
 
     <section class="stats" aria-label="Statistiques">
@@ -41,6 +47,7 @@
       <div class="legend">
         <span><i class="dot notamment"></i>Notamment</span>
         <span><i class="dot on_va_dire"></i>On va dire</span>
+        <span><i class="dot siris"></i>SIRIS</span>
       </div>
       <div id="chart" class="chart"></div>
     </section>
@@ -49,7 +56,7 @@
       <h2 id="history-title" class="section-title">Historique</h2>
       <table class="history" hidden>
         <thead>
-          <tr><th>Jour</th><th>Notamment</th><th>On va dire</th><th>Total</th></tr>
+          <tr><th>Jour</th><th>Notamment</th><th>On va dire</th><th>SIRIS</th><th>Total</th></tr>
         </thead>
         <tbody id="history-body"></tbody>
       </table>

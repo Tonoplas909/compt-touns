@@ -6,6 +6,7 @@
   --border: #e3e4e8;
   --notamment: #4f6bed;
   --on_va_dire: #e8673c;
+  --siris: #148a75;
   --danger: #c93636;
   color-scheme: light dark;
 }
@@ -19,6 +20,7 @@
     --border: #2c303a;
     --notamment: #7b8ff5;
     --on_va_dire: #f08a63;
+    --siris: #3fc4aa;
     --danger: #ef6b6b;
   }
 }
@@ -49,7 +51,7 @@ h1 { margin: 0; font-size: 1.6rem; }
 /* Compteurs */
 .counters {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: repeat(3, 1fr);
   gap: 12px;
 }
 
@@ -70,6 +72,7 @@ h1 { margin: 0; font-size: 1.6rem; }
   text-align: center;
 }
 .counter[data-expr="on_va_dire"] { --accent: var(--on_va_dire); }
+.counter[data-expr="siris"] { --accent: var(--siris); }
 
 .counter h2 { grid-area: title; margin: 0; font-size: 1rem; }
 .count {
@@ -142,6 +145,7 @@ section + section { margin-top: 28px; }
 .dot { display: inline-block; width: 10px; height: 10px; border-radius: 3px; margin-right: 6px; vertical-align: -1px; }
 .dot.notamment { background: var(--notamment); }
 .dot.on_va_dire { background: var(--on_va_dire); }
+.dot.siris { background: var(--siris); }
 
 .chart {
   display: grid;
@@ -170,6 +174,7 @@ section + section { margin-top: 28px; }
 }
 .bar .seg.notamment { background: var(--notamment); }
 .bar .seg.on_va_dire { background: var(--on_va_dire); }
+.bar .seg.siris { background: var(--siris); }
 .bar .day {
   font-size: 0.65rem;
   color: var(--muted);
@@ -201,6 +206,7 @@ section + section { margin-top: 28px; }
 .history tr.is-today td { font-weight: 700; }
 .history td.notamment { color: var(--notamment); }
 .history td.on_va_dire { color: var(--on_va_dire); }
+.history td.siris { color: var(--siris); }
 .empty { text-align: center; padding: 16px 0; }
 
 /* Statut de connexion */
@@ -219,7 +225,27 @@ section + section { margin-top: 28px; }
 .status[data-state="error"] { color: var(--danger); }
 .status[data-state="error"]::before { background: var(--danger); }
 
+/* Sur téléphone : un compteur par ligne, boutons à droite */
+@media (max-width: 600px) {
+  .counters { grid-template-columns: 1fr; }
+  .counter {
+    border-top: 1px solid var(--border);
+    border-left: 5px solid var(--accent);
+    padding: 10px 12px;
+    grid-template-columns: 1fr auto auto;
+    grid-template-areas:
+      "title minus plus"
+      "count minus plus";
+    align-items: center;
+    column-gap: 10px;
+    row-gap: 0;
+    text-align: left;
+  }
+  .count { font-size: 2.4rem; line-height: 1.1; }
+  .plus { min-width: 88px; min-height: 72px; }
+  .minus { min-height: 72px; }
+}
+
 @media (max-width: 420px) {
-  .count { font-size: 2.6rem; }
-  .history th, .history td { padding: 8px 6px; font-size: 0.85rem; }
+  .history th, .history td { padding: 8px 4px; font-size: 0.8rem; }
 }

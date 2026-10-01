@@ -229,7 +229,7 @@ function setDefiMessage(text, isError = false) {
 let lastDefisRequest = 0;
 async function refreshDefis() {
   const request = ++lastDefisRequest;
-  const { data: rows, error } = await db.from('defis').select('id, mot, created_at, validated_at').order('created_at');
+  const { data: rows, error } = await db.from('defis').select('id, mot, created_at, validated_at, valide_par').order('created_at');
   if (request !== lastDefisRequest) return;
   if (error) {
     console.error(error);
@@ -267,17 +267,42 @@ async function addDefi(event) {
   refreshDefis();
 }
 
+// Le dernier nom saisi est proposé par défaut (mémorisé sur cet appareil uniquement).
+const LAST_NAME_KEY = 'compt-touns-dernier-nom';
+
+function lastName() {
+  try { return localStorage.getItem(LAST_NAME_KEY) || ''; } catch { return ''; }
+}
+
 async function validerDefi(defi, button) {
-  if (!confirm(`Il a dit « ${defi.mot} » ?`)) return;
+  const answer = prompt(`Il a dit « ${defi.mot} » !\nQui lui a fait dire ? (facultatif)`, lastName());
+  if (answer === null) return; // annulé
+  const par = answer.replace(/\s+/g, ' ').trim().slice(0, 40);
+  if (par) try { localStorage.setItem(LAST_NAME_KEY, par); } catch {}
+
   button.disabled = true;
-  const { error } = await db.rpc('valider_defi', { defi_id: defi.id });
+  const { error } = await db.rpc('valider_defi', { defi_id: defi.id, par: par || null });
   if (error) {
     console.error(error);
     button.disabled = false;
     setDefiMessage("La validation n'a pas pu être enregistrée.", true);
     return;
   }
-  setDefiMessage(`« ${defi.mot} » validé !`);
+  setDefiMessage(par ? `« ${defi.mot} » validé, bravo ${par} !` : `« ${defi.mot} » validé !`);
+  refreshDefis();
+}
+
+async function supprimerDefi(defi, button) {
+  if (!confirm(`Supprimer « ${defi.mot} » de la file d'attente ?`)) return;
+  button.disabled = true;
+  const { error } = await db.rpc('supprimer_defi', { defi_id: defi.id });
+  if (error) {
+    console.error(error);
+    button.disabled = false;
+    setDefiMessage("Le mot n'a pas pu être supprimé.", true);
+    return;
+  }
+  setDefiMessage(`« ${defi.mot} » supprimé.`);
   refreshDefis();
 }
 
@@ -290,12 +315,22 @@ function renderDefis() {
     const mot = document.createElement('span');
     mot.className = 'mot';
     mot.textContent = defi.mot;
-    const button = document.createElement('button');
-    button.type = 'button';
-    button.className = 'valider';
-    button.textContent = "Il l'a dit ✓";
-    button.addEventListener('click', () => validerDefi(defi, button));
-    li.append(mot, button);
+    const actions = document.createElement('span');
+    actions.className = 'actions';
+    const valider = document.createElement('button');
+    valider.type = 'button';
+    valider.className = 'valider';
+    valider.textContent = "Il l'a dit ✓";
+    valider.addEventListener('click', () => validerDefi(defi, valider));
+    const supprimer = document.createElement('button');
+    supprimer.type = 'button';
+    supprimer.className = 'supprimer';
+    supprimer.textContent = '✕';
+    supprimer.title = 'Supprimer';
+    supprimer.setAttribute('aria-label', `Supprimer « ${defi.mot} »`);
+    supprimer.addEventListener('click', () => supprimerDefi(defi, supprimer));
+    actions.append(supprimer, valider);
+    li.append(mot, actions);
     return li;
   }));
 
@@ -306,7 +341,14 @@ function renderDefis() {
     mot.textContent = defi.mot;
     const quand = document.createElement('span');
     quand.className = 'quand';
-    quand.textContent = validatedDate.format(new Date(defi.validated_at));
+    const date = validatedDate.format(new Date(defi.validated_at));
+    if (defi.valide_par) {
+      const par = document.createElement('strong');
+      par.textContent = defi.valide_par;
+      quand.append('par ', par, ` · ${date}`);
+    } else {
+      quand.textContent = date;
+    }
     li.append(mot, quand);
     return li;
   }));

@@ -47,7 +47,9 @@ create table public.defis (
   id bigint generated always as identity primary key,
   mot text not null check (char_length(mot) between 1 and 60 and mot = btrim(mot)),
   created_at timestamptz not null default now(),
-  validated_at timestamptz
+  validated_at timestamptz,
+  valide_par text
+    check (valide_par is null or (char_length(valide_par) between 1 and 40 and valide_par = btrim(valide_par)))
 );
 
 -- Un même mot ne peut pas être deux fois dans la file d'attente.
@@ -70,18 +72,34 @@ revoke all on public.defis from anon, authenticated;
 grant select on public.defis to anon, authenticated;
 grant insert (mot) on public.defis to anon, authenticated;
 
--- Valider un défi : uniquement un mot en attente, à l'heure du serveur.
-create function public.valider_defi(defi_id bigint)
+-- Valider un défi : uniquement un mot en attente, à l'heure du serveur,
+-- avec le nom (facultatif) de celui qui l'a fait dire.
+create function public.valider_defi(defi_id bigint, par text default null)
 returns void
 language sql
 security definer
 set search_path = ''
 as $$
-  update public.defis set validated_at = now() where id = defi_id and validated_at is null;
+  update public.defis
+  set validated_at = now(), valide_par = nullif(btrim(left(par, 40)), '')
+  where id = defi_id and validated_at is null;
 $$;
 
-revoke execute on function public.valider_defi(bigint) from public, anon, authenticated;
-grant execute on function public.valider_defi(bigint) to anon, authenticated;
+revoke execute on function public.valider_defi(bigint, text) from public, anon, authenticated;
+grant execute on function public.valider_defi(bigint, text) to anon, authenticated;
+
+-- Supprimer un défi encore en attente (les défis validés ne peuvent pas être supprimés).
+create function public.supprimer_defi(defi_id bigint)
+returns void
+language sql
+security definer
+set search_path = ''
+as $$
+  delete from public.defis where id = defi_id and validated_at is null;
+$$;
+
+revoke execute on function public.supprimer_defi(bigint) from public, anon, authenticated;
+grant execute on function public.supprimer_defi(bigint) to anon, authenticated;
 
 -- Mises à jour en temps réel entre appareils.
 alter publication supabase_realtime add table public.defis;

@@ -252,11 +252,15 @@ section + section { margin-top: 28px; }
   padding: 8px 8px 8px 14px;
 }
 .defi-list .mot { font-weight: 600; overflow-wrap: anywhere; }
+.defi-list .actions { display: flex; gap: 6px; flex-shrink: 0; }
+.defi-list .supprimer { color: var(--muted); padding: 8px 12px; }
+.defi-list .supprimer:disabled { opacity: 0.5; }
 .defi-list .valider { flex-shrink: 0; background: var(--valide); border-color: var(--valide); color: #fff; font-weight: 600; padding: 8px 12px; }
 .defi-list .valider:disabled { opacity: 0.5; }
 .defi-list.done li { padding: 10px 14px; }
 .defi-list.done .mot { text-decoration: line-through; text-decoration-color: var(--valide); text-decoration-thickness: 2px; }
-.defi-list.done .quand { font-size: 0.8rem; color: var(--muted); white-space: nowrap; }
+.defi-list.done .quand { font-size: 0.8rem; color: var(--muted); text-align: right; }
+.defi-list.done .quand strong { color: var(--text); font-weight: 600; }
 .defis .empty { padding: 4px 0; text-align: left; font-size: 0.9rem; }
 
 /* Statut de connexion */

@@ -25,3 +25,9 @@ Pour remettre les compteurs à zéro, il faut le faire depuis le dashboard Supab
 
 **Settings → Pages → Build and deployment → Source : Deploy from a branch**, branche `main`,
 dossier `/ (root)`. Le site sera disponible sur `https://<utilisateur>.github.io/compt-touns/`.
+
+## Mise à jour du site
+
+Après une modification de `style.css`, `config.js` ou `script.js`, augmenter le numéro `?v=`
+des liens correspondants dans `index.html` : sinon les navigateurs peuvent garder l'ancienne
+version en cache jusqu'à 10 minutes.
